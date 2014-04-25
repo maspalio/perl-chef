@@ -23,14 +23,14 @@ require 'chef/mixin/language'
 include Chef::Mixin::ShellOut
 
 action :run do
-  # XXX should probably fail if no carton.lock is found in cwd
+  # XXX should probably fail if no cpanfile.snapshot is found in cwd
 
   app_perlbrew       = new_resource.perlbrew
   app_cwd            = new_resource.cwd
   app_command        = "carton exec -I lib -- #{new_resource.command}"
 
-  # hash carton.lock to ensure library dir is unique to a lock file
-  lock_hash = `sha1sum #{app_cwd}/carton.lock`[0..7]
+  # hash cpanfile.snapshot to ensure library dir is unique to a lock file
+  lock_hash = `sha1sum #{app_cwd}/cpanfile.snapshot`[0..7]
 
   app_local          = "local-#{app_perlbrew}-#{lock_hash}"
   app_env            = new_resource.environment.merge({

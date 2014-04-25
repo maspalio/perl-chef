@@ -24,7 +24,7 @@ include Chef::Mixin::ShellOut
 
 
 action :enable do
-  # XXX should probably fail if no carton.lock is found in cwd
+  # XXX should probably fail if no cpanfile.snapshot is found in cwd
 
   app_perlbrew       = new_resource.perlbrew
   app_user           = new_resource.user
@@ -32,8 +32,8 @@ action :enable do
   app_cwd            = new_resource.cwd
   app_command        = "carton exec -I lib -- #{new_resource.command}"
 
-  # hash carton.lock to ensure library dir is unique to a lock file
-  lock_hash = `sha1sum #{app_cwd}/carton.lock`[0..7]
+  # hash cpanfile.snapshot to ensure library dir is unique to a lock file
+  lock_hash = `sha1sum #{app_cwd}/cpanfile.snapshot`[0..7]
 
   app_local          = "local-#{app_perlbrew}-#{lock_hash}"
   app_env            = new_resource.environment.merge({
@@ -46,7 +46,7 @@ action :enable do
   carton_perlbrew = app_perlbrew || node['carton']['perlbrew']
   carton_lib = "#{carton_perlbrew}@carton"
 
-  # If local directory for current carton.lock exists, skip
+  # If local directory for current cpanfile.snapshot exists, skip
   # carton install
   updated = false
   unless ::File.exists?("#{app_cwd}/#{app_local}")
