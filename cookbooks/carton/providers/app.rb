@@ -57,7 +57,7 @@ action :enable do
       perlbrew carton_lib
     end
 
-    perlbrew_run "carton install hello-world" do
+    perlbrew_run "carton install" do
       perlbrew carton_lib
       environment app_env
       cwd app_cwd
