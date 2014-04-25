@@ -68,17 +68,17 @@ action :enable do
 
   # XXX should be idempotent
   r = runit_service new_resource.name do
-    action :enable
-    directory "/etc/sv/#{new_resource.name}"
-    template "carton-app"
-    cookbook "carton"
-    variables(
-      :perlbrew_root  => node['perlbrew']['perlbrew_root'],
-      :perlbrew => carton_lib,
-      :user     => app_user,
-      :group    => app_group,
-      :command  => app_command,
-      :cwd      => app_cwd
+    action       :enable
+    sv_dir       "/etc/sv/#{new_resource.name}" # as per CHEF-154
+    service_name "carton-app"                   # ditto
+    cookbook     "carton"
+    options(                                    # was variables
+      :perlbrew_root => node['perlbrew']['perlbrew_root'],
+      :perlbrew      => carton_lib,
+      :user          => app_user,
+      :group         => app_group,
+      :command       => app_command,
+      :cwd           => app_cwd
     )
     env app_env
     log true
