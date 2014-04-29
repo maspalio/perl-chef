@@ -21,6 +21,7 @@
 actions :install, :remove
 
 attribute :version, :kind_of => String
+attribute :perlbrew_options, :kind_of => String
 attribute :install_options, :kind_of => String
 attribute :installed, :default => false
 
