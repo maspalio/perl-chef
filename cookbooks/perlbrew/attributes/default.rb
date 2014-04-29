@@ -24,6 +24,7 @@ default['perlbrew']['perlbrew_root'] = '/opt/perlbrew'
 default['perlbrew']['perls'] = []
 # default command line options for "perlbrew install" if no LWRP options
 # attribute is given
+default['perlbrew']['perlbrew_options'] = ''
 default['perlbrew']['install_options'] = ''
 default['perlbrew']['cpanm_options'] = ''
 default['perlbrew']['self_upgrade'] = true

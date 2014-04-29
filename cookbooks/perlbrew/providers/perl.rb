@@ -28,7 +28,7 @@ action :install do
     new_resource.install_options(node['perlbrew']['install_options']) if not new_resource.install_options
     e = execute "Install perlbrew perl #{new_resource.name}" do
       environment ({'PERLBREW_ROOT' => node['perlbrew']['perlbrew_root']})
-      command "#{node['perlbrew']['perlbrew_root']}/bin/perlbrew install #{new_resource.version} --as #{new_resource.name} #{new_resource.install_options}"
+      command "#{node['perlbrew']['perlbrew_root']}/bin/perlbrew #{new_resource.perlbrew_options} install #{new_resource.version} --as #{new_resource.name} #{new_resource.install_options}"
       action :nothing
     end
     e.run_action(:run)
