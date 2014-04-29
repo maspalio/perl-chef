@@ -32,7 +32,7 @@ action :enable do
   app_perlbrew    = new_resource.perlbrew
   app_cwd         = new_resource.cwd
   
-  app_command     = "carton exec #{new_resource.command}" # was "carton exec -I lib -- #{new_resource.command}"
+  app_command     = "carton exec -- #{new_resource.command}" # was "carton exec -I lib -- #{new_resource.command}"
   lock_hash       = `sha1sum #{app_cwd}/cpanfile.snapshot`[0..7] # hash cpanfile.snapshot to ensure library dir is unique to a lock file
   app_local       = "local-#{app_perlbrew}-#{lock_hash}"
   app_env         = new_resource.environment.merge({
