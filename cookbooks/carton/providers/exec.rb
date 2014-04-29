@@ -25,35 +25,62 @@ include Chef::Mixin::ShellOut
 action :run do
   # XXX should probably fail if no cpanfile.snapshot is found in cwd
 
-  app_perlbrew       = new_resource.perlbrew
-  app_cwd            = new_resource.cwd
-  app_command        = "carton exec -I lib -- #{new_resource.command}"
+  #
+  # Variables.
+  #
 
-  # hash cpanfile.snapshot to ensure library dir is unique to a lock file
-  lock_hash = `sha1sum #{app_cwd}/cpanfile.snapshot`[0..7]
-
-  app_local          = "local-#{app_perlbrew}-#{lock_hash}"
-  app_env            = new_resource.environment.merge({
-    'PERLBREW_ROOT'     => node['perlbrew']['perlbrew_root'],
-    'PERLBREW_HOME'     => node['perlbrew']['perlbrew_root'],
-    'PERL_CARTON_PATH'  => app_local
+  app_perlbrew    = new_resource.perlbrew
+  app_cwd         = new_resource.cwd
+  
+  app_command     = "carton exec #{new_resource.command}" # was "carton exec -I lib -- #{new_resource.command}"
+  lock_hash       = `sha1sum #{app_cwd}/cpanfile.snapshot`[0..7] # hash cpanfile.snapshot to ensure library dir is unique to a lock file
+  app_local       = "local-#{app_perlbrew}-#{lock_hash}"
+  app_env         = new_resource.environment.merge({
+    'PERLBREW_ROOT'    => node['perlbrew']['perlbrew_root'],
+    'PERLBREW_HOME'    => node['perlbrew']['perlbrew_root'],
+    'PERL_CARTON_PATH' => app_local
   })
 
-  # ensure we have perl + carton for requested perlbrew version
   carton_perlbrew = app_perlbrew || node['carton']['perlbrew']
-  carton_lib = "#{carton_perlbrew}@carton"
+  carton_lib      = "#{carton_perlbrew}@carton"
 
-  perlbrew_perl carton_perlbrew
-  perlbrew_lib carton_lib
-  perlbrew_cpanm 'Carton' do
-    perlbrew carton_lib
-    modules ['Carton']
+  #
+  # Setup.
+  #
+
+  # ensure we have perl + carton for requested perlbrew version
+  # If local directory for current cpanfile.snapshot exists, skip carton install.
+  
+  updated = false
+  
+  unless ::File.exists?("#{app_cwd}/#{app_local}")
+    perlbrew_perl carton_perlbrew
+    perlbrew_lib  carton_lib
+
+    perlbrew_cpanm 'cpanm Carton' do
+      perlbrew carton_lib
+      modules  ['Carton']
+    end
+
+    perlbrew_run "carton install" do
+      perlbrew    carton_lib
+      environment app_env
+      cwd         app_cwd
+
+      command     "carton install --deployment"
+    end
+    
+    updated = true
   end
 
+  #
+  # Core.
+  #
+
   perlbrew_run app_command do
-    perlbrew carton_lib
+    perlbrew    carton_lib
     environment app_env
-    cwd app_cwd
+    cwd         app_cwd
   end
 
   new_resource.updated_by_last_action(true)
